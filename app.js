@@ -10,13 +10,14 @@ document.addEventListener('DOMContentLoaded', () => {
     initKitab();
 });
 
+// Loading Handler
 function toggleLoading(show) {
     const loading = document.getElementById('loading');
     if (show) loading.classList.remove('hidden');
     else loading.classList.add('hidden');
 }
 
-// --- THEME ---
+// --- THEME SYSTEM ---
 function initTheme() {
     const btn = document.getElementById('theme-toggle');
     const body = document.body;
@@ -41,7 +42,7 @@ function initTheme() {
     });
 }
 
-// --- LOCATION & PRAYER TIMES ---
+// --- GEOLOCATION & PRAYER TIMES ---
 function initLocationAndPrayer() {
     const container = document.getElementById('prayer-times-container');
     const hijriText = document.getElementById('hijri-text');
@@ -60,11 +61,11 @@ function initLocationAndPrayer() {
                         hijriText.innerText = `${hijri.day} ${hijri.month.en} ${hijri.year} H`;
                     }
                 } catch (error) {
-                    container.innerHTML = '<p class="text-bold">GAGAL MEMUAT JADWAL</p>';
+                    container.innerHTML = '<p class="text-muted">Gagal memuat jadwal sholat.</p>';
                 }
             },
             (error) => {
-                container.innerHTML = '<p class="text-bold text-red">LOKASI DITOLAK</p>';
+                container.innerHTML = '<p class="text-muted">Akses lokasi tidak diizinkan.</p>';
             }
         );
     }
@@ -121,37 +122,39 @@ function initNavigation() {
             tabPanes.forEach(pane => pane.classList.remove('active'));
             document.getElementById(targetId).classList.add('active');
             document.querySelector('.content-container').scrollTop = 0;
-            
-            if (document.body.classList.contains('mushaf-active')) {
-                toggleMushafMode(false);
-            }
         });
     });
 }
 
-// --- QURAN & CUSTOM AUDIO PLAYER ---
+// --- QURAN & SPOTLIGHT ZEN STAGE ENGINE ---
 const QURAN_API = 'https://equran.id/api/v2';
-let currentAudioUrl = '';
-let currentSurahName = '';
-let currentBaseFontSize = 3.0; 
+let currentSurahData = null;
+let currentAyatIndex = 0;
 
-// Audio Player DOM
+// Zen Elements
 const audioEl = document.getElementById('global-audio');
-const playerContainer = document.getElementById('custom-audio-player');
-const btnPlayPause = document.getElementById('btn-play-pause');
-const btnRewind = document.getElementById('btn-rewind');
-const btnForward = document.getElementById('btn-forward');
-const btnCloseAudio = document.getElementById('close-audio');
-const progressWrapper = document.getElementById('progress-wrapper');
-const progressFill = document.getElementById('progress-fill');
-const timeCurrent = document.getElementById('time-current');
-const timeTotal = document.getElementById('time-total');
-const audioTitle = document.getElementById('audio-title');
+const zenStageOverlay = document.getElementById('zen-stage-overlay');
+const btnZenMode = document.getElementById('btn-zen-mode');
+const btnZenClose = document.getElementById('btn-zen-close');
+const btnZenPlayPause = document.getElementById('btn-zen-play-pause');
+const btnZenPrev = document.getElementById('btn-zen-prev');
+const btnZenNext = document.getElementById('btn-zen-next');
 
-function formatTime(seconds) {
-    if (isNaN(seconds)) return "00:00";
-    const m = Math.floor(seconds / 60);
-    const s = Math.floor(seconds % 60);
+const zenSurahTitle = document.getElementById('zen-surah-title');
+const zenVerseCounter = document.getElementById('zen-verse-counter');
+const zenArabicActive = document.getElementById('zen-arabic-active');
+const zenTranslationActive = document.getElementById('zen-translation-active');
+const zenActiveCard = document.getElementById('zen-active-card');
+
+const zenProgressBarContainer = document.getElementById('zen-progress-bar-container');
+const zenProgressFill = document.getElementById('zen-progress-fill');
+const zenTimeCurrent = document.getElementById('zen-time-current');
+const zenTimeDuration = document.getElementById('zen-time-duration');
+
+function formatSeconds(sec) {
+    if (isNaN(sec) || !isFinite(sec)) return "00:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
 }
 
@@ -159,7 +162,7 @@ function initQuran() {
     fetch(`${QURAN_API}/surat`)
         .then(res => res.json())
         .then(json => renderSurahList(json.data))
-        .catch(() => document.getElementById('surah-list').innerHTML = '<p>Error.</p>');
+        .catch(() => document.getElementById('surah-list').innerHTML = '<p>Error memuat Al-Quran.</p>');
 
     document.getElementById('back-to-surah-list').addEventListener('click', () => {
         document.getElementById('surah-detail').classList.add('hidden');
@@ -167,76 +170,111 @@ function initQuran() {
         document.querySelector('.prayer-widget').classList.remove('hidden');
     });
 
-    // --- Audio Player Logic ---
-    document.getElementById('btn-play-full').addEventListener('click', () => {
-        if (currentAudioUrl) {
-            playerContainer.classList.remove('hidden');
-            audioTitle.innerText = currentSurahName;
-            if (audioEl.src !== currentAudioUrl) {
-                audioEl.src = currentAudioUrl;
-            }
-            audioEl.play();
+    // Zen Stage Launch
+    btnZenMode.addEventListener('click', () => {
+        if (currentSurahData && currentSurahData.ayat && currentSurahData.ayat.length > 0) {
+            currentAyatIndex = 0;
+            openZenStage();
         }
     });
 
-    btnCloseAudio.addEventListener('click', () => {
-        audioEl.pause();
-        playerContainer.classList.add('hidden');
+    btnZenClose.addEventListener('click', closeZenStage);
+
+    // Audio Playback Controls
+    btnZenPlayPause.addEventListener('click', () => {
+        if (audioEl.paused) {
+            audioEl.play();
+        } else {
+            audioEl.pause();
+        }
     });
 
-    btnPlayPause.addEventListener('click', () => {
-        if (audioEl.paused) audioEl.play();
-        else audioEl.pause();
+    btnZenPrev.addEventListener('click', () => {
+        if (currentAyatIndex > 0) {
+            currentAyatIndex--;
+            playZenVerse();
+        }
     });
 
-    btnRewind.addEventListener('click', () => { audioEl.currentTime = Math.max(0, audioEl.currentTime - 10); });
-    btnForward.addEventListener('click', () => { audioEl.currentTime = Math.min(audioEl.duration, audioEl.currentTime + 10); });
+    btnZenNext.addEventListener('click', () => {
+        if (currentSurahData && currentAyatIndex < currentSurahData.ayat.length - 1) {
+            currentAyatIndex++;
+            playZenVerse();
+        }
+    });
 
-    audioEl.addEventListener('play', () => { btnPlayPause.innerHTML = '<i class="fa-solid fa-pause"></i>'; });
-    audioEl.addEventListener('pause', () => { btnPlayPause.innerHTML = '<i class="fa-solid fa-play"></i>'; });
-    
-    audioEl.addEventListener('loadedmetadata', () => {
-        timeTotal.innerText = formatTime(audioEl.duration);
+    // Audio Engine Events
+    audioEl.addEventListener('play', () => {
+        btnZenPlayPause.innerHTML = '<i class="fa-solid fa-pause"></i>';
+    });
+
+    audioEl.addEventListener('pause', () => {
+        btnZenPlayPause.innerHTML = '<i class="fa-solid fa-play"></i>';
     });
 
     audioEl.addEventListener('timeupdate', () => {
-        timeCurrent.innerText = formatTime(audioEl.currentTime);
-        const percent = (audioEl.currentTime / audioEl.duration) * 100;
-        progressFill.style.width = `${percent}%`;
+        zenTimeCurrent.innerText = formatSeconds(audioEl.currentTime);
+        zenTimeDuration.innerText = formatSeconds(audioEl.duration);
+        if (audioEl.duration) {
+            const percent = (audioEl.currentTime / audioEl.duration) * 100;
+            zenProgressFill.style.width = `${percent}%`;
+        }
     });
 
-    progressWrapper.addEventListener('click', (e) => {
-        const rect = progressWrapper.getBoundingClientRect();
+    audioEl.addEventListener('ended', () => {
+        // Auto advance to next verse smoothly
+        if (currentSurahData && currentAyatIndex < currentSurahData.ayat.length - 1) {
+            currentAyatIndex++;
+            playZenVerse();
+        } else {
+            closeZenStage();
+        }
+    });
+
+    zenProgressBarContainer.addEventListener('click', (e) => {
+        const rect = zenProgressBarContainer.getBoundingClientRect();
         const clickX = e.clientX - rect.left;
         const width = rect.width;
-        const percent = clickX / width;
-        audioEl.currentTime = percent * audioEl.duration;
+        if (audioEl.duration) {
+            audioEl.currentTime = (clickX / width) * audioEl.duration;
+        }
     });
-
-    // --- Mushaf Mode Logic ---
-    document.getElementById('btn-mushaf-mode').addEventListener('click', () => toggleMushafMode(true));
-    document.getElementById('btn-mushaf-exit').addEventListener('click', () => toggleMushafMode(false));
-    document.getElementById('btn-mushaf-plus').addEventListener('click', () => { currentBaseFontSize += 0.5; applyFontSize(); });
-    document.getElementById('btn-mushaf-minus').addEventListener('click', () => { if(currentBaseFontSize > 1.5) currentBaseFontSize -= 0.5; applyFontSize(); });
-    document.getElementById('btn-mushaf-theme').addEventListener('click', () => document.getElementById('theme-toggle').click());
 }
 
-function applyFontSize() {
-    document.querySelectorAll('.ayat-arabic').forEach(el => el.style.fontSize = `${currentBaseFontSize}rem`);
+function openZenStage() {
+    zenStageOverlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    try { document.documentElement.requestFullscreen(); } catch (e) {}
+    playZenVerse();
 }
 
-function toggleMushafMode(active) {
-    const body = document.body;
-    const controls = document.getElementById('mushaf-controls');
-    if (active) {
-        body.classList.add('mushaf-active');
-        controls.classList.remove('hidden');
-        try { document.documentElement.requestFullscreen(); } catch (e) {}
-    } else {
-        body.classList.remove('mushaf-active');
-        controls.classList.add('hidden');
-        try { if(document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
-    }
+function closeZenStage() {
+    zenStageOverlay.classList.add('hidden');
+    document.body.style.overflow = '';
+    audioEl.pause();
+    try { if (document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
+}
+
+function playZenVerse() {
+    if (!currentSurahData) return;
+    const verse = currentSurahData.ayat[currentAyatIndex];
+    if (!verse) return;
+
+    // Restart verse pop animation
+    zenActiveCard.classList.remove('zen-active-card');
+    void zenActiveCard.offsetWidth; // trigger reflow
+    zenActiveCard.classList.add('zen-active-card');
+
+    // Update Content
+    zenSurahTitle.innerText = `Surah ${currentSurahData.namaLatin}`;
+    zenVerseCounter.innerText = `Ayat ${verse.nomorAyat} dari ${currentSurahData.jumlahAyat}`;
+    zenArabicActive.innerText = verse.teksArab;
+    zenTranslationActive.innerText = verse.teksIndonesia;
+
+    // Load Audio URL for Misyari Rasyid ("05")
+    const audioUrl = verse.audio["05"] || verse.audio["01"];
+    audioEl.src = audioUrl;
+    audioEl.play().catch(err => console.log('Autoplay handled:', err));
 }
 
 function renderSurahList(surahs) {
@@ -273,52 +311,55 @@ async function loadSurahDetail(nomorSurah) {
         toggleLoading(true);
         const res = await fetch(`${QURAN_API}/surat/${nomorSurah}`);
         const json = await res.json();
-        const surah = json.data;
+        currentSurahData = json.data;
         
-        currentSurahName = surah.namaLatin;
-        currentAudioUrl = surah.audioFull["05"]; 
-        
-        document.getElementById('detail-surah-name').innerText = surah.namaLatin.toUpperCase();
-        document.getElementById('detail-surah-arti').innerText = surah.arti;
-        document.getElementById('detail-surah-info').innerText = `${surah.tempatTurun} • ${surah.jumlahAyat} AYAT`;
+        document.getElementById('detail-surah-name').innerText = currentSurahData.namaLatin;
+        document.getElementById('detail-surah-arti').innerText = currentSurahData.arti;
+        document.getElementById('detail-surah-info').innerText = `${currentSurahData.tempatTurun} • ${currentSurahData.jumlahAyat} AYAT`;
         
         const bismillahHeader = document.getElementById('bismillah-header');
         if (nomorSurah === 1 || nomorSurah === 9) bismillahHeader.classList.add('hidden');
         else bismillahHeader.classList.remove('hidden');
 
-        surah.ayat.forEach(ayat => {
+        currentSurahData.ayat.forEach(ayat => {
             const div = document.createElement('div');
             div.className = 'ayat-item';
+            div.id = `ayat-${ayat.nomorAyat}`;
             div.innerHTML = `
                 <div class="ayat-header">
-                    <span class="ayat-number">${surah.nomor}:${ayat.nomorAyat}</span>
+                    <span class="ayat-number">${currentSurahData.nomor}:${ayat.nomorAyat}</span>
                 </div>
-                <div class="ayat-arabic" style="font-size: ${currentBaseFontSize}rem">${ayat.teksArab}</div>
+                <div class="ayat-arabic">${ayat.teksArab}</div>
                 <div class="ayat-translation">${ayat.teksIndonesia}</div>
             `;
             ayatContainer.appendChild(div);
         });
 
     } catch (error) {
-        ayatContainer.innerHTML = '<p>Gagal memuat ayat.</p>';
+        ayatContainer.innerHTML = '<p class="text-muted">Gagal memuat ayat Al-Quran.</p>';
     } finally {
         toggleLoading(false);
     }
 }
 
-// --- HADIST, DOA, IBADAH, KITAB (Minimal changes to adapt to styling) ---
-function initHadist() { /* Keeps same data and logic, styling is handled in CSS */ 
+// --- HADIST, DOA, IBADAH, MUSLIMAH, KITAB ---
+function initHadist() {
     const HADIST_API = 'https://hadis-api-id.vercel.app/hadith';
-    const books = [{id:'bukhari',name:'HR. Bukhari',avail:7008},{id:'muslim',name:'HR. Muslim',avail:5362},{id:'abudaud',name:'HR. Abu Daud',avail:4590},{id:'tirmidzi',name:'HR. Tirmidzi',avail:3625}];
+    const books = [
+        { id: 'bukhari', name: 'HR. Bukhari', avail: 7008 },
+        { id: 'muslim', name: 'HR. Muslim', avail: 5362 },
+        { id: 'abudaud', name: 'HR. Abu Daud', avail: 4590 },
+        { id: 'tirmidzi', name: 'HR. Tirmidzi', avail: 3625 }
+    ];
     const container = document.getElementById('hadist-books');
     books.forEach(b => {
         const card = document.createElement('div');
         card.className = 'card';
-        card.innerHTML = `<div class="card-title">${b.name}</div><div class="card-subtitle">${b.avail} HADIST</div>`;
+        card.innerHTML = `<div class="card-title">${b.name}</div><div class="card-subtitle mt-2">${b.avail} HADIST SHAHIH</div>`;
         card.addEventListener('click', async () => {
             document.getElementById('hadist-books').classList.add('hidden');
             document.getElementById('hadist-detail').classList.remove('hidden');
-            document.getElementById('hadist-book-name').innerText = b.name.toUpperCase();
+            document.getElementById('hadist-book-name').innerText = b.name;
             toggleLoading(true);
             try {
                 const res = await fetch(`${HADIST_API}/${b.id}?limit=20`);
@@ -326,22 +367,31 @@ function initHadist() { /* Keeps same data and logic, styling is handled in CSS 
                 const list = document.getElementById('hadist-list');
                 list.innerHTML = '';
                 json.items.forEach(h => {
-                    list.innerHTML += `<div class="ayat-item"><div class="ayat-header"><span class="ayat-number">No. ${h.number}</span></div><div class="ayat-arabic" style="font-size:2.5rem">${h.arab}</div><div class="ayat-translation">${h.id}</div></div>`;
+                    list.innerHTML += `
+                        <div class="ayat-item">
+                            <div class="ayat-header"><span class="luxury-badge">Hadist No. ${h.number}</span></div>
+                            <div class="ayat-arabic" style="font-size:2.3rem">${h.arab}</div>
+                            <div class="ayat-translation">${h.id}</div>
+                        </div>
+                    `;
                 });
             } catch(e) {}
             toggleLoading(false);
         });
         container.appendChild(card);
     });
+
     document.getElementById('back-to-hadist-list').addEventListener('click', () => {
-        document.getElementById('hadist-detail').classList.add('hidden'); document.getElementById('hadist-books').classList.remove('hidden');
+        document.getElementById('hadist-detail').classList.add('hidden');
+        document.getElementById('hadist-books').classList.remove('hidden');
     });
 }
 
 const doaData = [
     { title: 'DOA SEBELUM MAKAN', arabic: 'اللَّهُمَّ بَارِكْ لَنَا فِيمَا رَزَقْتَنَا وَقِنَا عَذَابَ النَّارِ', text: 'Allahumma baarik lanaa fiimaa rozaqtanaa wa qinaa \'adzaaban naar.', trans: 'Ya Allah, berkahilah kami dalam rezeki yang telah Engkau berikan kepada kami dan peliharalah kami dari siksa api neraka.' },
     { title: 'DOA SESUDAH MAKAN', arabic: 'الْحَمْدُ لِلَّهِ الَّذِي أَطْعَمَنَا وَسَقَانَا وَجَعَلَنَا مُسْلِمِينَ', text: 'Alhamdulillahilladzi ath\'amanaa wa saqoonaa wa ja\'alanaa muslimiin.', trans: 'Segala puji bagi Allah yang telah memberi kami makan dan minum serta menjadikan kami termasuk golongan orang muslim.' },
-    { title: 'DOA SEBELUM TIDUR', arabic: 'بِاسْمِكَ اللَّهُمَّ أَحْيَا وَبِاسْمِكَ أَمُوتُ', text: 'Bismikallahumma ahyaa wa bismika amuut.', trans: 'Dengan nama-Mu ya Allah aku hidup, dan dengan nama-Mu aku mati.' }
+    { title: 'DOA SEBELUM TIDUR', arabic: 'بِاسْمِكَ اللَّهُمَّ أَحْيَا وَبِاسْمِكَ أَمُوتُ', text: 'Bismikallahumma ahyaa wa bismika amuut.', trans: 'Dengan nama-Mu ya Allah aku hidup, dan dengan nama-Mu aku mati.' },
+    { title: 'DOA BANGUN TIDUR', arabic: 'الْحَمْدُ لِلَّهِ الَّذِي أَحْيَانَا بَعْدَ مَا أَمَاتَنَا وَإِلَيْهِ النُّشُورُ', text: 'Alhamdulillahilladzi ahyaanaa ba\'da maa amaatanaa wa ilaihin nusyuur.', trans: 'Segala puji bagi Allah, yang telah membangunkan kami setelah menidurkan kami, dan kepada-Nya lah kami dibangkitkan.' }
 ];
 
 function initDoa() {
@@ -349,7 +399,14 @@ function initDoa() {
     function render(data) {
         container.innerHTML = '';
         data.forEach(d => {
-            container.innerHTML += `<div class="card"><div class="card-title text-gold mb-3">${d.title}</div><div class="ayat-arabic" style="font-size:2.2rem; margin-bottom:12px;">${d.arabic}</div><div class="text-bold italic mb-3">${d.text}</div><div class="text-muted">${d.trans}</div></div>`;
+            container.innerHTML += `
+                <div class="glass-card">
+                    <div class="card-title text-gold mb-2" style="font-size:1.15rem">${d.title}</div>
+                    <div class="ayat-arabic" style="font-size:2rem; margin-bottom:14px;">${d.arabic}</div>
+                    <div class="font-bold mb-2 text-secondary" style="font-style:italic">${d.text}</div>
+                    <div class="text-muted" style="font-size:0.95rem">${d.trans}</div>
+                </div>
+            `;
         });
     }
     render(doaData);
@@ -391,12 +448,20 @@ function initIbadahTracker() {
 }
 
 function initMuslimah() {
-    const data = [{title:'PENGERTIAN HAIDH', content:'Haidh adalah darah kebiasaan yang keluar dari rahim wanita sehat...'},{title:'MASA HAIDH', content:'Minimal 1 hari 1 malam, maksimal 15 hari.'}];
+    const data = [
+        { title: 'PENGERTIAN HAIDH (MENSTRUASI)', content: 'Haidh adalah darah kebiasaan yang keluar dari rahim wanita sehat pada waktu-waktu tertentu. Selama masa haidh, wanita diharamkan untuk sholat, puasa, thawaf, dan menyentuh mushaf Al-Quran.' },
+        { title: 'MASA HAIDH DAN SUCI', content: 'Minimal masa haidh adalah sehari semalam (24 jam), dan maksimal 15 hari 15 malam. Masa suci antara dua haidh minimal adalah 15 hari.' },
+        { title: 'NIFAS (DARAH PASCA MELAHIRKAN)', content: 'Nifas adalah darah yang keluar setelah proses melahirkan. Masa maksimal nifas umumnya adalah 40 hari (atau 60 hari menurut madzhab Syafi\'i).' },
+        { title: 'ISTIHADAH (DARAH PENYAKIT)', content: 'Istihadah adalah darah yang keluar di luar masa haidh dan nifas. Wanita istihadah tetap wajib sholat dan puasa setelah membersihkan diri dan berwudhu setiap kali masuk waktu sholat.' }
+    ];
     const container = document.getElementById('muslimah-accordion');
     data.forEach(d => {
         const div = document.createElement('div');
         div.className = 'accordion-item';
-        div.innerHTML = `<button class="accordion-header">${d.title} <i class="fa-solid fa-chevron-down"></i></button><div class="accordion-content"><p class="mt-4">${d.content}</p></div>`;
+        div.innerHTML = `
+            <button class="accordion-header">${d.title} <i class="fa-solid fa-chevron-down"></i></button>
+            <div class="accordion-content"><p class="mt-4 mb-4">${d.content}</p></div>
+        `;
         div.querySelector('.accordion-header').addEventListener('click', (e) => {
             const content = div.querySelector('.accordion-content');
             content.classList.toggle('open');
@@ -407,9 +472,20 @@ function initMuslimah() {
 }
 
 function initKitab() {
-    const data = [{title:'RIYADHUS SHALIHIN', author:'Imam An-Nawawi', desc:'Kitab kumpulan hadist shahih populer.'},{title:'AL-HIKAM', author:'Ibn Athaillah', desc:'Kitab tasawuf dan hikmah.'}];
+    const data = [
+        { title: 'RIYADHUS SHALIHIN', author: 'Imam An-Nawawi', desc: 'Kitab kumpulan hadist shahih paling populer mengenai adab dan akhlak sehari-hari.' },
+        { title: 'AL-HIKAM', author: 'Ibn Athaillah As-Sakandari', desc: 'Kitab hikmah dan tasawuf yang sangat mendalam untuk pembersihan jiwa.' },
+        { title: 'BULUGHUL MARAM', author: 'Ibnu Hajar Al-Asqalani', desc: 'Kitab perujukan hadist hukum fiqh utama bagi penuntut ilmu.' },
+        { title: 'TAFSIR IBNU KATSIR', author: 'Ibnu Katsir', desc: 'Rujukan utama penafsiran Al-Quran ayat demi ayat secara shahih.' }
+    ];
     const container = document.getElementById('kitab-list');
     data.forEach(d => {
-        container.innerHTML += `<div class="card"><div class="card-title">${d.title}</div><div class="neo-badge inline-block mt-2 mb-3">Oleh: ${d.author}</div><div class="text-muted font-bold">${d.desc}</div></div>`;
+        container.innerHTML += `
+            <div class="card">
+                <div class="card-title">${d.title}</div>
+                <div class="luxury-badge inline-block mt-2 mb-2">Oleh: ${d.author}</div>
+                <div class="card-subtitle">${d.desc}</div>
+            </div>
+        `;
     });
 }

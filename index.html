@@ -3,209 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MyQuran - World Class Muslim App</title>
-    <!-- Google Fonts -->
+    <title>MyQuran - Ultra-Premium Muslim App</title>
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="dark-mode">
     <div class="app-container">
-        <!-- Sidebar for Desktop -->
-        <aside class="sidebar neo-box">
+        <!-- Floating Glass Sidebar (Desktop) -->
+        <aside class="sidebar">
             <div class="sidebar-header">
-                <h2><i class="fa-solid fa-kaaba text-gold"></i> MYQURAN</h2>
+                <h2><i class="fa-solid fa-kaaba text-gold"></i> MyQuran</h2>
             </div>
             <nav class="sidebar-nav">
-                <button class="nav-btn active" data-target="quran">
-                    <div class="icon-box"><i class="fa-solid fa-book-quran"></i></div>
-                    <span>Al-Quran</span>
-                </button>
-                <button class="nav-btn" data-target="hadist">
-                    <div class="icon-box"><i class="fa-solid fa-scroll"></i></div>
-                    <span>Hadist</span>
-                </button>
-                <button class="nav-btn" data-target="doa">
-                    <div class="icon-box"><i class="fa-solid fa-hands-praying"></i></div>
-                    <span>Doa Harian</span>
-                </button>
-                <button class="nav-btn" data-target="ibadah">
-                    <div class="icon-box"><i class="fa-solid fa-list-check"></i></div>
-                    <span>Ibadah</span>
-                </button>
-                <button class="nav-btn" data-target="muslimah">
-                    <div class="icon-box"><i class="fa-solid fa-person-dress"></i></div>
-                    <span>Muslimah</span>
-                </button>
-                <button class="nav-btn" data-target="kitab">
-                    <div class="icon-box"><i class="fa-solid fa-book"></i></div>
-                    <span>Kitab</span>
-                </button>
+                <button class="nav-btn active" data-target="quran"><i class="fa-solid fa-book-quran"></i> <span>Al-Quran</span></button>
+                <button class="nav-btn" data-target="hadist"><i class="fa-solid fa-scroll"></i> <span>Hadist</span></button>
+                <button class="nav-btn" data-target="doa"><i class="fa-solid fa-hands-praying"></i> <span>Doa Harian</span></button>
+                <button class="nav-btn" data-target="ibadah"><i class="fa-solid fa-list-check"></i> <span>Ibadah</span></button>
+                <button class="nav-btn" data-target="muslimah"><i class="fa-solid fa-person-dress"></i> <span>Muslimah</span></button>
+                <button class="nav-btn" data-target="kitab"><i class="fa-solid fa-book"></i> <span>Kitab</span></button>
             </nav>
         </aside>
 
-        <!-- Main Content Area -->
-        <main class="main-content" id="main-content">
+        <!-- Main Workspace Area -->
+        <main class="main-content">
             <!-- Top Bar -->
-            <header class="top-bar neo-glass">
+            <header class="top-bar">
                 <div class="mobile-logo hidden-desktop">
-                    <h2><i class="fa-solid fa-kaaba text-gold"></i> MYQURAN</h2>
+                    <h2><i class="fa-solid fa-kaaba text-gold"></i> MyQuran</h2>
                 </div>
-                <div class="top-bar-actions">
-                    <button id="theme-toggle" class="neo-btn-icon tooltip" data-tip="Ganti Tema">
-                        <i class="fa-solid fa-moon"></i>
-                    </button>
-                </div>
+                <button id="theme-toggle" class="btn-icon-glass" title="Ganti Tema"><i class="fa-solid fa-moon"></i></button>
             </header>
 
             <!-- Loading Spinner -->
             <div id="loading" class="loading hidden">
-                <div class="neo-spinner"></div>
-                <h3 class="mt-4">MEMUAT...</h3>
+                <div class="spinner"></div>
+                <p class="font-bold tracking-wide mt-2">Memuat Data...</p>
             </div>
 
-            <!-- Tab Contents -->
+            <!-- Tab Container -->
             <div id="content-container" class="content-container">
-                
-                <!-- Quran Section -->
+                <!-- Al-Quran Tab -->
                 <section id="quran" class="tab-pane active">
-                    <!-- Prayer Times & Hijri Widget -->
-                    <div class="prayer-widget neo-card">
+                    <!-- Prayer & Hijri Widget -->
+                    <div class="prayer-widget glass-card">
                         <div class="hijri-date">
-                            <div class="icon-box bg-gold"><i class="fa-regular fa-calendar-days"></i></div>
-                            <span id="hijri-text" class="text-xl font-bold">Kalender Hijriyah</span>
+                            <div class="icon"><i class="fa-regular fa-calendar-days"></i></div>
+                            <div>
+                                <div class="text-muted uppercase tracking-wider text-xs font-bold mb-2">Hari Ini</div>
+                                <span id="hijri-text" class="font-extrabold text-gold" style="font-size: 1.35rem;">Kalender Hijriyah</span>
+                            </div>
                         </div>
                         <div class="prayer-times" id="prayer-times-container">
-                            <p class="location-prompt text-bold"><i class="fa-solid fa-location-dot"></i> Mencari lokasi Anda...</p>
+                            <p class="text-muted"><i class="fa-solid fa-location-dot text-emerald"></i> Mencari lokasi Anda...</p>
                         </div>
                     </div>
 
-                    <div class="section-header">
-                        <h1 class="giant-title">AL-QURAN</h1>
-                        <p class="subtitle neo-badge">Bacaan & Murottal</p>
+                    <div class="flex-between mb-6">
+                        <div>
+                            <h1 class="title-headline">Al-Quran</h1>
+                            <p class="text-muted">Bacaan & Murottal Audio Per-Ayat</p>
+                        </div>
+                        <span class="luxury-badge">Rasm Utsmani</span>
                     </div>
                     
-                    <div id="quran-view" class="quran-view">
-                        <!-- Surah List -->
-                        <div id="surah-list" class="surah-grid"></div>
+                    <div id="quran-view">
+                        <!-- Surah Grid -->
+                        <div id="surah-list" class="grid-list"></div>
                         
-                        <!-- Surah Detail -->
-                        <div id="surah-detail" class="surah-detail hidden">
-                            <div class="surah-toolbar neo-glass">
-                                <button id="back-to-surah-list" class="neo-btn"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button>
-                                <div class="toolbar-actions">
-                                    <button id="btn-mushaf-mode" class="neo-btn outline-gold"><i class="fa-solid fa-expand"></i> MUSHAF</button>
-                                    <button id="btn-play-full" class="neo-btn solid-green"><i class="fa-solid fa-play"></i> AUDIO</button>
+                        <!-- Surah Detail View -->
+                        <div id="surah-detail" class="hidden">
+                            <div class="surah-toolbar glass-panel px-4">
+                                <button id="back-to-surah-list" class="btn-luxury"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+                                <div>
+                                    <button id="btn-zen-mode" class="btn-luxury btn-primary-glow"><i class="fa-solid fa-play"></i> Zen Spotlight Mode</button>
                                 </div>
                             </div>
-                            
-                            <!-- Mushaf Floating Controls -->
-                            <div id="mushaf-controls" class="mushaf-controls hidden neo-glass">
-                                <button id="btn-mushaf-exit" class="neo-btn-icon solid-red"><i class="fa-solid fa-compress"></i></button>
-                                <button id="btn-mushaf-minus" class="neo-btn-icon"><i class="fa-solid fa-minus"></i></button>
-                                <button id="btn-mushaf-plus" class="neo-btn-icon"><i class="fa-solid fa-plus"></i></button>
-                                <button id="btn-mushaf-theme" class="neo-btn-icon solid-green"><i class="fa-solid fa-circle-half-stroke"></i></button>
-                            </div>
 
-                            <div class="surah-info-header neo-card text-center mb-5">
-                                <h1 id="detail-surah-name" class="massive-text text-gold"></h1>
-                                <h3 id="detail-surah-arti" class="mt-2"></h3>
-                                <div id="detail-surah-info" class="neo-badge mt-4 mx-auto inline-block"></div>
+                            <div class="surah-info-header glass-card">
+                                <h1 id="detail-surah-name" class="title-headline text-gold" style="font-size: 3.2rem;"></h1>
+                                <h3 id="detail-surah-arti" class="text-secondary mt-2"></h3>
+                                <div id="detail-surah-info" class="luxury-badge inline-block mt-4"></div>
                             </div>
                             
-                            <div class="bismillah hidden text-center" id="bismillah-header">
-                                بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ
-                            </div>
+                            <div class="bismillah hidden" id="bismillah-header">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
                             
-                            <div id="ayat-list" class="ayat-list mt-5"></div>
+                            <div id="ayat-list" class="ayat-list"></div>
                         </div>
                     </div>
                 </section>
 
-                <!-- Hadist Section -->
+                <!-- Hadist Tab -->
                 <section id="hadist" class="tab-pane">
-                    <div class="section-header">
-                        <h1 class="giant-title">HADIST</h1>
-                        <p class="subtitle neo-badge">Kumpulan Hadist Shahih</p>
-                    </div>
-                    <div class="hadist-view">
-                        <div id="hadist-books" class="grid-list"></div>
-                        <div id="hadist-detail" class="hidden">
-                             <button id="back-to-hadist-list" class="neo-btn mb-5"><i class="fa-solid fa-arrow-left"></i> KEMBALI</button>
-                             <div class="surah-info-header neo-card mb-5 text-center">
-                                 <h1 id="hadist-book-name" class="massive-text text-gold"></h1>
-                             </div>
-                             <div id="hadist-list" class="hadist-list"></div>
-                        </div>
+                    <div class="mb-6"><h1 class="title-headline">Hadist</h1><p class="text-muted">Kumpulan Kitab Hadist Shahih</p></div>
+                    <div id="hadist-books" class="grid-list"></div>
+                    <div id="hadist-detail" class="hidden">
+                         <button id="back-to-hadist-list" class="btn-luxury mb-6"><i class="fa-solid fa-arrow-left"></i> Kembali</button>
+                         <div class="surah-info-header glass-card mb-6"><h1 id="hadist-book-name" class="title-headline text-gold"></h1></div>
+                         <div id="hadist-list" class="ayat-list"></div>
                     </div>
                 </section>
 
-                <!-- Doa Section -->
+                <!-- Doa Tab -->
                 <section id="doa" class="tab-pane">
-                    <div class="section-header">
-                        <h1 class="giant-title">DOA HARIAN</h1>
-                    </div>
-                    <div class="search-box neo-box mb-5">
-                        <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="text" id="search-doa" placeholder="Cari doa...">
-                    </div>
+                    <div class="mb-6"><h1 class="title-headline">Doa Harian</h1><p class="text-muted">Kumpulan Doa Pilihan Sehari-hari</p></div>
+                    <div class="search-box mb-6"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="search-doa" placeholder="Cari doa harian..."></div>
                     <div id="doa-list" class="grid-list"></div>
                 </section>
 
-                <!-- Ibadah Section -->
+                <!-- Ibadah Tab -->
                 <section id="ibadah" class="tab-pane">
-                    <div class="section-header">
-                        <h1 class="giant-title">IBADAH</h1>
-                    </div>
-                    <div class="tracker-container">
-                        <div class="date-selector neo-card mb-5 flex-between">
-                            <button id="prev-day" class="neo-btn-icon outline-gold"><i class="fa-solid fa-arrow-left"></i></button>
-                            <h2 id="current-date-display" class="text-gold uppercase tracking-wider">Hari Ini</h2>
-                            <button id="next-day" class="neo-btn-icon outline-gold"><i class="fa-solid fa-arrow-right"></i></button>
-                        </div>
-                        
-                        <div class="checklist-group neo-card mb-4">
-                            <h3 class="neo-border-bottom mb-4 pb-2 text-gold">SHOLAT WAJIB</h3>
-                            <div class="checklist-items" id="tracker-wajib"></div>
-                        </div>
-
-                        <div class="checklist-group neo-card mb-4">
-                            <h3 class="neo-border-bottom mb-4 pb-2 text-gold">SHOLAT SUNNAH</h3>
-                            <div class="checklist-items" id="tracker-sunnah"></div>
-                        </div>
-
-                        <div class="checklist-group neo-card mb-4">
-                            <h3 class="neo-border-bottom mb-4 pb-2 text-gold">AMALAN LAIN</h3>
-                            <div class="checklist-items" id="tracker-amalan"></div>
-                        </div>
-                    </div>
+                    <div class="mb-6"><h1 class="title-headline">Tabel Ibadah</h1><p class="text-muted">Jurnal Amalan Harian Muslim</p></div>
+                    <div class="glass-card mb-6 flex-between"><button id="prev-day" class="btn-icon-glass"><i class="fa-solid fa-arrow-left"></i></button><h2 id="current-date-display" class="font-extrabold text-gold">Hari Ini</h2><button id="next-day" class="btn-icon-glass"><i class="fa-solid fa-arrow-right"></i></button></div>
+                    <div class="glass-card mb-4"><h3 class="font-bold text-emerald uppercase tracking-wider mb-4">Sholat Wajib</h3><div id="tracker-wajib"></div></div>
+                    <div class="glass-card mb-4"><h3 class="font-bold text-emerald uppercase tracking-wider mb-4">Sholat Sunnah</h3><div id="tracker-sunnah"></div></div>
+                    <div class="glass-card mb-4"><h3 class="font-bold text-emerald uppercase tracking-wider mb-4">Amalan Lainnya</h3><div id="tracker-amalan"></div></div>
                 </section>
 
-                <!-- Muslimah Section -->
+                <!-- Muslimah Tab -->
                 <section id="muslimah" class="tab-pane">
-                    <div class="section-header">
-                        <h1 class="giant-title">FIQH WANITA</h1>
-                    </div>
-                    <div class="accordion" id="muslimah-accordion"></div>
+                    <div class="mb-6"><h1 class="title-headline">Fiqh Muslimah</h1><p class="text-muted">Panduan & Hukum Khusus Wanita</p></div>
+                    <div id="muslimah-accordion"></div>
                 </section>
 
-                <!-- Kitab Section -->
+                <!-- Kitab Tab -->
                 <section id="kitab" class="tab-pane">
-                    <div class="section-header">
-                        <h1 class="giant-title">KITAB ULAMA</h1>
-                    </div>
+                    <div class="mb-6"><h1 class="title-headline">Kitab Ulama</h1><p class="text-muted">Referensi Karya Ulama Klasik</p></div>
                     <div id="kitab-list" class="grid-list"></div>
                 </section>
             </div>
         </main>
 
-        <!-- Floating Mobile Navigation -->
+        <!-- Floating Bottom Nav (Mobile) -->
         <nav class="mobile-nav-wrapper hidden-desktop">
-            <div class="mobile-nav neo-glass">
+            <div class="mobile-nav">
                 <button class="nav-btn active" data-target="quran"><i class="fa-solid fa-book-quran"></i></button>
                 <button class="nav-btn" data-target="hadist"><i class="fa-solid fa-scroll"></i></button>
                 <button class="nav-btn" data-target="doa"><i class="fa-solid fa-hands-praying"></i></button>
@@ -215,31 +151,48 @@
             </div>
         </nav>
 
-        <!-- Powerful Custom Audio Player -->
-        <div id="custom-audio-player" class="custom-audio-player neo-glass hidden">
-            <!-- Hidden native audio element -->
+        <!-- -------------------------------------------------------------
+             SPOTLIGHT ZEN STAGE OVERLAY (SPOTIFY-STYLE LYRIC SYNC)
+             ------------------------------------------------------------- -->
+        <div id="zen-stage-overlay" class="hidden">
+            <!-- Native Audio Engine -->
             <audio id="global-audio" src=""></audio>
             
-            <div class="player-header flex-between mb-3">
-                <div class="player-info">
-                    <h3 id="audio-title" class="text-gold tracking-wider"></h3>
-                    <p class="text-xs font-bold uppercase">Misyari Rasyid Al-Afasi</p>
+            <!-- Zen Stage Top Bar -->
+            <div class="zen-stage-header">
+                <span class="luxury-badge"><i class="fa-solid fa-headphones"></i> Murottal Zen Stage</span>
+                <div class="zen-stage-title-group">
+                    <h3 id="zen-surah-title" class="font-extrabold text-gold" style="font-size: 1.25rem;">Surah Name</h3>
+                    <p id="zen-verse-counter" class="text-muted text-xs uppercase tracking-wider font-bold">Ayat 1 dari 7</p>
                 </div>
-                <button id="close-audio" class="neo-btn-icon solid-red"><i class="fa-solid fa-xmark"></i></button>
+                <button id="btn-zen-close" class="btn-icon-glass" title="Tutup Stage"><i class="fa-solid fa-xmark"></i></button>
             </div>
-            
-            <div class="player-controls flex-center gap-4 mb-3">
-                <button id="btn-rewind" class="neo-btn-icon outline-gold small"><i class="fa-solid fa-backward-10"></i></button>
-                <button id="btn-play-pause" class="neo-btn-icon solid-green giant-btn"><i class="fa-solid fa-play"></i></button>
-                <button id="btn-forward" class="neo-btn-icon outline-gold small"><i class="fa-solid fa-forward-10"></i></button>
-            </div>
-            
-            <div class="player-progress-container flex-between gap-3">
-                <span id="time-current" class="time-display font-bold">00:00</span>
-                <div class="progress-bar-wrapper neo-box flex-1 cursor-pointer" id="progress-wrapper">
-                    <div class="progress-fill bg-gold" id="progress-fill"></div>
+
+            <!-- Zen Stage Center (Active Verse Spotlight) -->
+            <div class="zen-stage-center">
+                <div id="zen-active-card" class="zen-active-card">
+                    <div id="zen-arabic-active" class="zen-arabic-text">بِسْمِ اللّٰهِ الرَّحْمٰنِ الرَّحِيْمِ</div>
+                    <div id="zen-translation-active" class="zen-translation-text">Dengan nama Allah Yang Maha Pengasih lagi Maha Penyayang.</div>
                 </div>
-                <span id="time-total" class="time-display font-bold">00:00</span>
+            </div>
+
+            <!-- Zen Stage Player Footer -->
+            <div class="zen-stage-footer">
+                <div class="mb-4">
+                    <div class="zen-progress-bar-container" id="zen-progress-bar-container">
+                        <div class="zen-progress-fill" id="zen-progress-fill"></div>
+                    </div>
+                    <div class="flex-between mt-2 text-xs font-bold text-muted">
+                        <span id="zen-time-current">00:00</span>
+                        <span id="zen-time-duration">00:00</span>
+                    </div>
+                </div>
+
+                <div class="flex-between">
+                    <button id="btn-zen-prev" class="btn-icon-glass" title="Ayat Sebelumnya"><i class="fa-solid fa-backward-step"></i></button>
+                    <button id="btn-zen-play-pause" class="btn-icon-glass btn-primary-glow" style="width:58px; height:58px; font-size:1.4rem;" title="Play/Pause"><i class="fa-solid fa-pause"></i></button>
+                    <button id="btn-zen-next" class="btn-icon-glass" title="Ayat Selanjutnya"><i class="fa-solid fa-forward-step"></i></button>
+                </div>
             </div>
         </div>
     </div>
